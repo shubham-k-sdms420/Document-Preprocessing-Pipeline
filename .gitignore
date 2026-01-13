@@ -82,6 +82,10 @@ logs/
 *.bak
 *.cache
 
+# Lock files (LibreOffice, etc.)
+.~lock.*
+*~
+
 # Test coverage
 .coverage
 .pytest_cache/

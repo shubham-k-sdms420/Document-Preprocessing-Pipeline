@@ -97,8 +97,22 @@ PROCESSING_CONFIG = {
     'fallback_contrast_threshold': get_env_float('FALLBACK_CONTRAST_THRESHOLD', 20.0),
     'fallback_brightness_threshold': get_env_float('FALLBACK_BRIGHTNESS_THRESHOLD', 80.0),
     # Scikit-image parameters
-    'scikit_clahe_clip_limit': get_env_float('SCIKIT_CLAHE_CLIP_LIMIT', 2.0),
-    'scikit_sharpen_sigma': get_env_float('SCIKIT_SHARPEN_SIGMA', 0.6),
+    'scikit_clahe_clip_limit': get_env_float('SCIKIT_CLAHE_CLIP_LIMIT', 2.3),
+    'scikit_sharpen_sigma': get_env_float('SCIKIT_SHARPEN_SIGMA', 0.5),
+    'scikit_sharpen_strength': get_env_float('SCIKIT_SHARPEN_STRENGTH', 0.96),
     'scikit_sharpen_factor': get_env_float('SCIKIT_SHARPEN_FACTOR', 0.3),
+    'scikit_watermark_blend_bad': get_env_float('SCIKIT_WATERMARK_BLEND_BAD', 0.85),
+    'scikit_watermark_blend_good': get_env_float('SCIKIT_WATERMARK_BLEND_GOOD', 0.9),
     'scikit_watermark_blend': get_env_float('SCIKIT_WATERMARK_BLEND', 0.75),
+    'scikit_morphological_kernel_size': get_env_int('SCIKIT_MORPHOLOGICAL_KERNEL_SIZE', 3),
+    'scikit_morphological_iterations': get_env_int('SCIKIT_MORPHOLOGICAL_ITERATIONS', 1),
+    # Scikit denoising parameters
+    'scikit_apply_denoising': get_env_bool('SCIKIT_APPLY_DENOISING', True),
+    'scikit_denoise_h': get_env_float('SCIKIT_DENOISE_H', 1.5),
+    'scikit_denoise_template_window': get_env_int('SCIKIT_DENOISE_TEMPLATE_WINDOW', 7),
+    'scikit_denoise_search_window': get_env_int('SCIKIT_DENOISE_SEARCH_WINDOW', 21),
+    # Scikit background noise reduction
+    'scikit_apply_background_cleanup': get_env_bool('SCIKIT_APPLY_BACKGROUND_CLEANUP', True),
+    'scikit_background_median_kernel': get_env_int('SCIKIT_BACKGROUND_MEDIAN_KERNEL', 3),
+    'scikit_background_blend_ratio': get_env_float('SCIKIT_BACKGROUND_BLEND_RATIO', 0.7),
 }
