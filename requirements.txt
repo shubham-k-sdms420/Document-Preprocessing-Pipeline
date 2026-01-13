@@ -1,0 +1,19 @@
+# Core dependencies (required)
+opencv-python>=4.8.0
+numpy>=1.24.0
+Pillow>=10.0.0
+scikit-image>=0.22.0
+scipy>=1.11.0
+
+# PDF processing (optional - only needed for PDF support)
+pdf2image>=1.16.0
+
+# Web application (optional - only needed for Flask app)
+Flask>=3.0.0
+werkzeug>=3.0.0
+
+# Batch processing utilities (optional)
+tqdm>=4.66.0
+
+# Configuration management
+python-dotenv>=1.0.0
