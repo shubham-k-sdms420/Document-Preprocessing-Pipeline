@@ -268,14 +268,7 @@ class ImageEnhancer:
     def enhance_scikit(self, image: np.ndarray, quality_class: str) -> np.ndarray:
         """
         Alternative enhancement using scikit-image - focus on clarity and readability
-        Pipeline steps:
-        1. Brightness/Contrast Adjustment (PIL)
-        2. Light Denoising (before CLAHE to prevent noise amplification) - uses SCIKIT_DENOISE_H
-        3. CLAHE (clip_limit = 2.3) - uses SCIKIT_CLAHE_CLIP_LIMIT
-        4. Background Noise Cleanup (light median filter) - uses SCIKIT_BACKGROUND_MEDIAN_KERNEL
-        5. Watermark Reduction (bilateral filter, light blend)
-        6. Morphological Enhancement (close operation)
-        7. Sharpening (UnsharpMask with radius=0.5, strength=96%) - uses SCIKIT_SHARPEN_SIGMA
+        Simplified pipeline to avoid blur and maintain sharpness
         
         Args:
             image: Input image
@@ -316,34 +309,16 @@ class ImageEnhancer:
         
         result = np.array(pil_image, dtype=np.uint8)
         
-        # Step 2: Light denoising BEFORE CLAHE to reduce noise amplification
-        # CLAHE amplifies noise, so reduce it first
-        apply_denoising = PROCESSING_CONFIG.get('scikit_apply_denoising', True)
-        if apply_denoising:
-            denoise_h = PROCESSING_CONFIG.get('scikit_denoise_h', 1.5)
-            template_window = PROCESSING_CONFIG.get('scikit_denoise_template_window', 7)
-            search_window = PROCESSING_CONFIG.get('scikit_denoise_search_window', 21)
-            result = cv2.fastNlMeansDenoising(result, None, h=denoise_h,
-                                              templateWindowSize=template_window,
-                                              searchWindowSize=search_window)
-        
-        # Step 3: CLAHE with scikit-specific clip limit (2.3)
-        clahe_clip_limit = PROCESSING_CONFIG.get('scikit_clahe_clip_limit', 2.3)
+        # Step 2: Light CLAHE for contrast improvement (preserve sharpness)
+        if quality_class == 'BAD':
+            clahe_clip_limit = PROCESSING_CONFIG.get('clahe_clip_limit_bad', 2.5)
+        else:
+            clahe_clip_limit = PROCESSING_CONFIG.get('clahe_clip_limit_good', 1.8)
         tile_size = PROCESSING_CONFIG.get('clahe_tile_size', 8)
         clahe = cv2.createCLAHE(clipLimit=clahe_clip_limit, tileGridSize=(tile_size, tile_size))
         result = clahe.apply(result)
         
-        # Step 4: Background noise cleanup (light median filter for uniform background)
-        apply_background_cleanup = PROCESSING_CONFIG.get('scikit_apply_background_cleanup', True)
-        if apply_background_cleanup:
-            median_kernel = PROCESSING_CONFIG.get('scikit_background_median_kernel', 3)
-            blend_ratio = PROCESSING_CONFIG.get('scikit_background_blend_ratio', 0.7)
-            # Light median filter to smooth background noise while preserving text edges
-            background_smoothed = cv2.medianBlur(result, median_kernel)
-            # Blend with original to preserve text sharpness (configurable ratio)
-            result = cv2.addWeighted(result, blend_ratio, background_smoothed, 1.0 - blend_ratio, 0)
-        
-        # Step 5: Watermark reduction (bilateral filter, light blend)
+        # Step 3: Very light watermark reduction ONLY if enabled (minimize blur)
         apply_watermark = PROCESSING_CONFIG.get('apply_watermark_reduction', True)
         if apply_watermark:
             # Use lighter parameters and higher blend ratio to preserve sharpness
@@ -351,34 +326,32 @@ class ImageEnhancer:
                 d = PROCESSING_CONFIG.get('watermark_bilateral_d_bad', 7)
                 sigma_color = PROCESSING_CONFIG.get('watermark_sigma_color_bad', 50.0)
                 sigma_space = PROCESSING_CONFIG.get('watermark_sigma_space_bad', 50.0)
-                # Use scikit-specific blend ratio from config
+                # Use scikit-specific blend ratio from config (default: 0.85)
                 blend_ratio = PROCESSING_CONFIG.get('scikit_watermark_blend_bad', 0.85)
             else:
                 d = PROCESSING_CONFIG.get('watermark_bilateral_d_good', 5)
                 sigma_color = PROCESSING_CONFIG.get('watermark_sigma_color_good', 40.0)
                 sigma_space = PROCESSING_CONFIG.get('watermark_sigma_space_good', 40.0)
-                # Use scikit-specific blend ratio from config
+                # Use scikit-specific blend ratio from config (default: 0.9)
                 blend_ratio = PROCESSING_CONFIG.get('scikit_watermark_blend_good', 0.9)
             bilateral = self.watermark_reducer.reduce_bilateral(result, d=int(d), 
                                                                 sigma_color=sigma_color, 
                                                                 sigma_space=sigma_space)
             result = cv2.addWeighted(result, blend_ratio, bilateral, 1.0 - blend_ratio, 0)
         
-        # Step 6: Morphological Enhancement (close operation)
-        # Closing operation helps connect text strokes and reduce background noise
-        kernel_size = PROCESSING_CONFIG.get('scikit_morphological_kernel_size', 3)
-        iterations = PROCESSING_CONFIG.get('scikit_morphological_iterations', 1)
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_size, kernel_size))
-        result = cv2.morphologyEx(result, cv2.MORPH_CLOSE, kernel, iterations=iterations)
-        
-        # Step 7: Sharpening with scikit-specific parameters
+        # Step 4: STRONG sharpening to restore and enhance clarity
+        # Skip denoising as it causes blur - sharpening will help with clarity instead
         apply_sharpening = PROCESSING_CONFIG.get('apply_sharpening', True)
         if apply_sharpening:
-            # Use scikit-specific sharpen strength from config
-            sharpen_strength = PROCESSING_CONFIG.get('scikit_sharpen_strength', 0.96)
+            # Use stronger sharpening for scikit method to compensate for any blur
+            sharpen_strength = PROCESSING_CONFIG.get('sharpen_strength', 0.65)
+            # Increase strength for scikit method to ensure clarity
+            sharpen_strength = min(sharpen_strength * 1.2, 1.0)  # Boost by 20% but cap at 1.0
             
-            # Use scikit-specific sharpen sigma from config
-            sharpen_sigma = PROCESSING_CONFIG.get('scikit_sharpen_sigma', 0.5)
+            if quality_class == 'BAD':
+                sharpen_sigma = PROCESSING_CONFIG.get('sharpen_sigma_bad', 1.0)
+            else:
+                sharpen_sigma = PROCESSING_CONFIG.get('sharpen_sigma_good', 0.8)
             
             # Unsharp mask for clarity
             alpha = 1.0 + sharpen_strength
