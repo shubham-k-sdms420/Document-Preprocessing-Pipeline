@@ -35,6 +35,7 @@ venv.bak/
 .env
 .env.local
 .env.*.local
+preprocessingenvup.txt
 
 # IDE
 .vscode/

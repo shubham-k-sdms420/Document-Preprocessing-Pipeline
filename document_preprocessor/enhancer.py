@@ -6,8 +6,6 @@ Main preprocessing pipeline with quality-aware enhancement
 import cv2
 import numpy as np
 from PIL import Image, ImageEnhance
-from skimage import exposure, filters, restoration
-from skimage.util import img_as_ubyte
 from typing import Dict, List, Tuple, Optional
 
 from .quality import DocumentQualityAssessor
