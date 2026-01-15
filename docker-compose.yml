@@ -1,0 +1,31 @@
+services:
+  preprocessing-pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: document-preprocessor
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount uploads and outputs directories for persistence
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      # Mount .env file if it exists (optional - can use environment variables instead)
+      - ./.env:/app/.env:ro
+    environment:
+      # Override with environment variables if needed
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - preprocessing-network
+
+networks:
+  preprocessing-network:
+    driver: bridge
