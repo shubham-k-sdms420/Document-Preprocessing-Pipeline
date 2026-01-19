@@ -54,8 +54,16 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code
 COPY --chown=appuser:appuser . .
 
-# Switch to non-root user
-USER appuser
+# Copy and set up entrypoint script
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+# Set entrypoint (runs as root to fix permissions, then switches to appuser)
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+# Default to root user (entrypoint will switch to appuser after fixing permissions)
+# This allows the entrypoint to fix permissions on mounted volumes
+USER root
 
 # Expose Flask port (default 5000, can be overridden via PORT env var)
 ARG PORT=5000

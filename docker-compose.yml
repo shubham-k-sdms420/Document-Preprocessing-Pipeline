@@ -10,13 +10,15 @@ services:
       # Mount uploads and outputs directories for persistence
       - ./uploads:/app/uploads
       - ./outputs:/app/outputs
-      # Mount .env as .env file for the application
-      - ./.env:/app/.env:ro
+      # Mount preprocessingenvup.txt as .env file for the application
+      - ./preprocessingenvup.txt:/app/.env:ro
     environment:
       # Application port (read from .env file or use default)
       - PORT=${PORT:-5010}
       - FLASK_ENV=production
       - PYTHONUNBUFFERED=1
+    # Run as root to fix permissions, then switch to appuser via entrypoint
+    user: "0:0"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request, os; port = os.getenv('PORT', '5010'); urllib.request.urlopen(f'http://localhost:{port}/')"]
