@@ -44,6 +44,11 @@ def get_env_bool(key: str, default: bool) -> bool:
     return value.lower() in ('true', '1', 'yes', 'on')
 
 
+# Application Configuration
+APP_CONFIG = {
+    'port': get_env_int('PORT', 5000),
+}
+
 # Quality Assessment Configuration
 QUALITY_CONFIG = {
     'blur_threshold': get_env_float('BLUR_THRESHOLD', 100.0),

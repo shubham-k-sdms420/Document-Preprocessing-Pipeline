@@ -21,7 +21,7 @@ except ImportError:
     pass
 
 from document_preprocessor import ImageEnhancer, PDFProcessor
-from document_preprocessor.config import PROCESSING_CONFIG
+from document_preprocessor.config import PROCESSING_CONFIG, APP_CONFIG
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -540,4 +540,5 @@ def bulk_download():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = APP_CONFIG.get('port', 5000)
+    app.run(debug=True, host='0.0.0.0', port=port)

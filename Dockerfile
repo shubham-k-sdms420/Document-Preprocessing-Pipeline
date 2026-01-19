@@ -57,12 +57,13 @@ COPY --chown=appuser:appuser . .
 # Switch to non-root user
 USER appuser
 
-# Expose Flask port
-EXPOSE 5000
+# Expose Flask port (default 5000, can be overridden via PORT env var)
+ARG PORT=5000
+EXPOSE ${PORT}
 
-# Health check
+# Health check (uses PORT env var at runtime)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/')" || exit 1
+    CMD python -c "import urllib.request, os; port = os.getenv('PORT', '5000'); urllib.request.urlopen(f'http://localhost:{port}/')" || exit 1
 
 # Run the application
 CMD ["python", "app.py"]
