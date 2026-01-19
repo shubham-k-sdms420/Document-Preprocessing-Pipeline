@@ -51,8 +51,10 @@ WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy application code
+# Copy application code (exclude .env files to avoid conflicts)
 COPY --chown=appuser:appuser . .
+# Ensure .env doesn't exist as a directory (will be mounted as file)
+RUN rm -rf /app/.env 2>/dev/null || true
 
 # Copy and set up entrypoint script
 COPY docker-entrypoint.sh /docker-entrypoint.sh

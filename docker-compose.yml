@@ -10,8 +10,8 @@ services:
       # Mount uploads and outputs directories for persistence
       - ./uploads:/app/uploads
       - ./outputs:/app/outputs
-      # Mount preprocessingenvup.txt as .env file for the application
-      - ./preprocessingenvup.txt:/app/.env:ro
+      # Mount .env file for the application
+      - ./.env:/app/.env:ro
     environment:
       # Application port (read from .env file or use default)
       - PORT=${PORT:-5010}

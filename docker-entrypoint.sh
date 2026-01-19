@@ -4,6 +4,12 @@ set -e
 # Create directories if they don't exist
 mkdir -p /app/uploads /app/outputs
 
+# Ensure .env file exists (should be mounted from host)
+# If not mounted, create a default one
+if [ ! -f /app/.env ]; then
+    echo "# Default .env file" > /app/.env
+fi
+
 # Fix permissions for mounted volumes (running as root)
 chmod -R 777 /app/uploads /app/outputs 2>/dev/null || true
 
